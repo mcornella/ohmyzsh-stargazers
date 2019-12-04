@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Oh My Zsh stargazers</title>
+</head>
+<body>
+    <h1 id="starcounter">0</h1>
+    <script>
+        function wslog(...params) {
+            console.log('[wss]', ...params)
+        }
+
+        let socket = new WebSocket('ws://localhost:3001/')
+        socket.onopen = function () {
+            wslog('socket open')
+        }
+        socket.onmessage = function (ev) {
+            wslog('message:', ev.data)
+            let data = JSON.parse(ev.data)
+            if (data.count) {
+                let counter = document.getElementById('starcounter')
+                counter.style.color = data.dir === "up" ? 'green' : 'red'
+                counter.textContent = "" + data.count
+            }
+        }
+        socket.onclose = function () {
+            wslog('socket closed')
+        }
+    </script>
+</body>
+</html>
