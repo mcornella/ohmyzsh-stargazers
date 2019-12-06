@@ -14,7 +14,6 @@
     "express": "^4.17.1",
     "https": "^1.0.0",
     "node-fetch": "^2.6.0",
-    "odometer": "^0.4.8",
     "smee-client": "^1.1.0",
     "ws": "^7.1.2"
   }
