@@ -2,8 +2,6 @@
 require('dotenv').config()
 
 const PORT = process.env.PORT || 3000
-const WEBHOOK_URL = process.env.WEBHOOK_URL
-if (!WEBHOOK_URL) throw new Error('missing webhook URL')
 
 
 // SET UP INITIAL SERVER STATE
@@ -79,17 +77,13 @@ server.listen(PORT, function () {
 
 const SmeeClient = require('smee-client')
 
-// mock console to silence smee console output
-const fakelogger = {};
-for (let key of Object.keys(console)) {
-    if (typeof console[key] === 'function')
-        fakelogger[key] = () => { }
-}
+const WEBHOOK_URL = process.env.WEBHOOK_URL
+if (!WEBHOOK_URL) throw new Error('missing webhook URL')
 
 const smee = new SmeeClient({
     source: WEBHOOK_URL,
     target: `https://localhost:${PORT}/events`,
-    logger: fakelogger
+    logger: console
 })
 
 smee.start();
