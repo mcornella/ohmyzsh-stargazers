@@ -12,17 +12,35 @@ const WEBHOOK_URL = process.env.WEBHOOK_URL
 if (!WEBHOOK_URL) throw new Error('missing webhook URL')
 
 
+// SET UP INITIAL SERVER STATE
+
+let STATE = {
+    stars: 0,
+    clients: 0
+}
+
+const fetch = require('node-fetch')
+fetch('https://api.github.com/repos/ohmyzsh/ohmyzsh')
+    .then(res => res.json())
+    .then(json => { STATE.stars = json.stargazers_count || 0; })
+
+
 // SET UP WEBSOCKET ENDPOINT
 
-const http = require('http')
-const server = http.createServer(app)
+const fs = require('fs')
+const https = require('https')
+const server = https.createServer({
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.crt')
+})
 
 const WebSocket = require('ws')
 const wss = new WebSocket.Server({ server })
 
 wss.on('connection', (ws) => {
     console.log('[wss]', `New client. Connected: ${wss.clients.size}`)
-    ws.send(JSON.stringify({ say: 'Hello World' }, null, 0))
+    STATE.clients = wss.clients.size
+    ws.send(JSON.stringify(STATE, null, 0))
 })
 
 server.listen(PORT + 1, function () {
@@ -31,11 +49,6 @@ server.listen(PORT + 1, function () {
 
 
 // SET UP SERVER ENDPOINT
-
-let STARS = {
-    count: 0,
-    dir: 'up'
-}
 
 app.use(express.json())
 
@@ -52,11 +65,10 @@ app.post('/events', verify, function (req, res) {
         console.log(`Star ${action} by @${user}: ${stars}`)
 
         // Update global object
-        STARS.dir = (STARS.count <= stars) ? 'up' : 'down'
-        STARS.count = stars;
+        STATE.stars = stars;
 
         // Broadcast stars change
-        let json = JSON.stringify(STARS, null, 0)
+        let json = JSON.stringify(STATE, null, 0)
         wss.clients.forEach(function each(client) {
             client.send(json)
         })
@@ -64,7 +76,10 @@ app.post('/events', verify, function (req, res) {
     res.status(200).send()
 })
 
-app.listen(PORT, function () {
+https.createServer({
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.crt')
+}, app).listen(PORT, function () {
     console.log(`Server listening on port ${PORT}`)
 })
 

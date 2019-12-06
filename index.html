@@ -5,26 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Oh My Zsh stargazers</title>
+    <link href="https://fonts.googleapis.com/css?family=Merriweather:900|Open+Sans&display=swap" rel="stylesheet">
+    <style>
+    html {
+        height: 100%;
+        width: 100%;
+    }
+    body {
+        text-align: center;
+        font-family: 'Open Sans', sans-serif;
+    }
+    #star-counter {
+        font-family: Merriweather, serif;
+        font-size: 15vw;
+        font-weight: 900;
+        text-shadow: 10px 8px 5px rgb(172, 172, 172);
+        margin-bottom: 0;
+    }
+    #star-counter + p {
+        font-size: 5vw;
+        margin-top: -10px;
+    }
+    </style>
 </head>
 <body>
-    <h1 id="starcounter">0</h1>
+    <h1 id="star-counter">-</h1>
+    <p>stars</p>
     <script>
         function wslog(...params) {
             console.log('[wss]', ...params)
         }
 
-        let socket = new WebSocket('ws://localhost:3001/')
+        function updateCounters({ stars, clients }) {
+            if (stars) {
+                let starCounter = document.getElementById('star-counter')
+                starCounter.textContent = "" + stars
+            }
+
+            if (clients) {
+                console.log(`Currently connected: ${clients}`)
+            }
+        }
+
+        let socket = new WebSocket(`wss://${window.location.hostname}:3001/`)
         socket.onopen = function () {
             wslog('socket open')
         }
         socket.onmessage = function (ev) {
             wslog('message:', ev.data)
+
             let data = JSON.parse(ev.data)
-            if (data.count) {
-                let counter = document.getElementById('starcounter')
-                counter.style.color = data.dir === "up" ? 'green' : 'red'
-                counter.textContent = "" + data.count
-            }
+            updateCounters(data)
         }
         socket.onclose = function () {
             wslog('socket closed')
