@@ -25,14 +25,13 @@ fetch('https://api.github.com/repos/ohmyzsh/ohmyzsh')
     .then(json => { STATE.stars = json.stargazers_count || 0; })
 
 
-// SET UP SERVER ENDPOINT
+// SET UP EXPRESS SERVER
 
-app.use(express.json())
+// static assets
+app.use(express.static('static'))
 
-app.get('/', function (req, res) {
-    res.sendFile(path.join(__dirname, 'index.html'))
-})
-
+// webhook endpoint
+app.use('/events', express.json())
 app.post('/events', verify, function (req, res) {
     if (req.get('x-github-event') === 'star') {
         // Get star event data
