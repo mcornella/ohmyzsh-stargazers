@@ -8,7 +8,7 @@ if (!WEBHOOK_URL) throw new Error('missing webhook URL')
 
 // SET UP INITIAL SERVER STATE
 
-let STATE = {
+let State = {
     stars: 0,
     clients: 0
 }
@@ -16,7 +16,7 @@ let STATE = {
 const fetch = require('node-fetch')
 fetch('https://api.github.com/repos/ohmyzsh/ohmyzsh')
     .then(res => res.json())
-    .then(json => { STATE.stars = json.stargazers_count || 0; })
+    .then(json => { State.stars = json.stargazers_count || 0; })
 
 
 // SET UP EXPRESS SERVER
@@ -40,10 +40,10 @@ app.post('/events', verify, function (req, res) {
         console.log(`Star ${action} by @${user}: ${stars}`)
 
         // Update global object
-        STATE.stars = stars;
+        State.stars = stars;
 
         // Broadcast stars change
-        let json = JSON.stringify(STATE, null, 0)
+        let json = JSON.stringify(State, null, 0)
         wss.clients.forEach(function each(client) {
             client.send(json)
         })
@@ -66,8 +66,8 @@ const wss = new WebSocket.Server({ server, path: '/ws' })
 
 wss.on('connection', (ws) => {
     console.log('[wss]', `New client. Connected: ${wss.clients.size}`)
-    STATE.clients = wss.clients.size
-    ws.send(JSON.stringify(STATE, null, 0))
+    State.clients = wss.clients.size
+    ws.send(JSON.stringify(State, null, 0))
 })
 
 server.listen(PORT, function () {
