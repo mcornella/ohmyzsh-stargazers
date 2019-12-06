@@ -86,8 +86,24 @@
             animation: 'count'
         });
 
+        // debounce logic from https://davidwalsh.name/javascript-debounce-function
+        function debounce(func, wait, immediate) {
+            var timeout;
+            return function() {
+                var context = this, args = arguments
+                var later = function() {
+                    timeout = null
+                    if (!immediate) func.apply(context, args)
+                }
+                var callNow = immediate && !timeout
+                clearTimeout(timeout)
+                timeout = setTimeout(later, wait)
+                if (callNow) func.apply(context, args)
+            }
+        }
+
         // Update star and connected counters
-        function updateCounters({ stars, clients, disconnected }) {
+        const updateCounters = debounce(function ({ stars, clients, disconnected }) {
             let connectedCounter = document.getElementById('connected-counter')
             let starsCounter = document.getElementById('stars-counter')
 
@@ -108,24 +124,24 @@
                 starsCounter.textContent = "" + stars
 
                 if (beforeStars < 1e5 && stars >= 1e5) {
-                    confetti && confetti.start(5000, 50, 120)
+                    confetti && confetti.start(5000, 80, 120)
                 }
             }
-        }
+        }, 200)
 
         // WebSocket logic
         let socket = new WebSocket(`wss://${window.location.host}/ws`)
         socket.onopen = function () {
-            console.info('[ws] socket open')
+            console.debug('[ws] socket open')
         }
         socket.onmessage = function (ev) {
-            console.info('[ws] message:', ev.data)
+            console.debug('[ws] message:', ev.data)
 
             let data = JSON.parse(ev.data)
             updateCounters(data)
         }
         socket.onclose = function () {
-            console.info('[ws] socket closed')
+            console.debug('[ws] socket closed')
             updateCounters({ disconnected: true })
         }
     </script>
