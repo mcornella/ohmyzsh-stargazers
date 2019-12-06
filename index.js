@@ -25,29 +25,6 @@ fetch('https://api.github.com/repos/ohmyzsh/ohmyzsh')
     .then(json => { STATE.stars = json.stargazers_count || 0; })
 
 
-// SET UP WEBSOCKET ENDPOINT
-
-const fs = require('fs')
-const https = require('https')
-const server = https.createServer({
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.crt')
-})
-
-const WebSocket = require('ws')
-const wss = new WebSocket.Server({ server })
-
-wss.on('connection', (ws) => {
-    console.log('[wss]', `New client. Connected: ${wss.clients.size}`)
-    STATE.clients = wss.clients.size
-    ws.send(JSON.stringify(STATE, null, 0))
-})
-
-server.listen(PORT + 1, function () {
-    console.log(`WebSocket server started on port ${PORT + 1}`)
-})
-
-
 // SET UP SERVER ENDPOINT
 
 app.use(express.json())
@@ -76,10 +53,26 @@ app.post('/events', verify, function (req, res) {
     res.status(200).send()
 })
 
-https.createServer({
+
+// SET UP WEBSOCKET ENDPOINT
+
+const fs = require('fs')
+const https = require('https')
+const server = https.createServer({
     key: fs.readFileSync('server.key'),
     cert: fs.readFileSync('server.crt')
-}, app).listen(PORT, function () {
+}, app)
+
+const WebSocket = require('ws')
+const wss = new WebSocket.Server({ server, path: '/ws' })
+
+wss.on('connection', (ws) => {
+    console.log('[wss]', `New client. Connected: ${wss.clients.size}`)
+    STATE.clients = wss.clients.size
+    ws.send(JSON.stringify(STATE, null, 0))
+})
+
+server.listen(PORT, function () {
     console.log(`Server listening on port ${PORT}`)
 })
 
@@ -97,7 +90,7 @@ for (let key of Object.keys(console)) {
 
 const smee = new SmeeClient({
     source: WEBHOOK_URL,
-    target: `http://localhost:${PORT}/events`,
+    target: `https://localhost:${PORT}/events`,
     logger: fakelogger
 })
 

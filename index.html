@@ -47,7 +47,7 @@
             }
         }
 
-        let socket = new WebSocket(`wss://${window.location.hostname}:3001/`)
+        let socket = new WebSocket(`wss://${window.location.host}/ws`)
         socket.onopen = function () {
             wslog('socket open')
         }
