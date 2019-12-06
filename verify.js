@@ -1,5 +1,9 @@
 const crypto = require('crypto')
 
+/// Secure way to generate random secret:
+/// const crypto = require('crypto')
+/// crypto.randomBytes(32).toString('hex')
+
 const secret = process.env.WEBHOOK_SECRET
 if (!secret) throw new Error('missing webhook secret')
 
