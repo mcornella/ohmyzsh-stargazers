@@ -7,6 +7,7 @@
     <title>Oh My Zsh stargazers</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     <link href="https://fonts.googleapis.com/css?family=Merriweather:900|Open+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="odometer-theme-default.css" />
     <style>
     html {
         height: 100%;
@@ -31,9 +32,9 @@
     }
     #stars-counter + p {
         font-size: 5vw;
-        margin-top: -10px;
+        margin-top: -1vw;
     }
-    .connected {
+    #connected-counter {
         position: absolute;
         right: 10px;
         bottom: 10px;
@@ -41,41 +42,61 @@
         color: #0f0;
         font-family: monospace;
     }
+    #connected-counter.disconnected {
+        color: #f00;
+    }
     </style>
 </head>
 <body>
     <h1 id="stars-counter">-</h1>
     <p>stars</p>
-    <p class="connected"><span id="clients-counter">0</span> connected.</p>
-    <script>
-        function wslog(...params) {
-            console.log('[wss]', ...params)
-        }
+    <p id="connected-counter">0 connected</p>
 
-        function updateCounters({ stars, clients }) {
-            if (stars) {
-                let starsCounter = document.getElementById('stars-counter')
+    <script src="odometer.min.js"></script>
+    <script>
+        var od = new Odometer({
+            el: document.getElementById('stars-counter'),
+            value: 0,
+            format: '(,ddd)',
+            theme: 'default',
+            animation: 'count'
+        });
+
+        // Update star and connected counters
+        function updateCounters({ stars, clients, disconnected }) {
+            let connectedCounter = document.getElementById('connected-counter')
+            let starsCounter = document.getElementById('stars-counter')
+
+            if (disconnected) {
+                connectedCounter.textContent = `disconnected`
+                connectedCounter.classList.add('disconnected')
+                return
+            }
+
+            if (clients > 0) {
+                connectedCounter.textContent = `${clients} connected`
+                connectedCounter.classList.remove('disconnected')
+            }
+
+            if (stars > 0) {
                 starsCounter.textContent = "" + stars
             }
-
-            if (clients) {
-                let clientsCounter = document.getElementById('clients-counter');
-                clientsCounter.textContent = "" + clients
-            }
         }
 
+        // WebSocket logic
         let socket = new WebSocket(`wss://${window.location.host}/ws`)
         socket.onopen = function () {
-            wslog('socket open')
+            console.info('[ws] socket open')
         }
         socket.onmessage = function (ev) {
-            wslog('message:', ev.data)
+            console.info('[ws] message:', ev.data)
 
             let data = JSON.parse(ev.data)
             updateCounters(data)
         }
         socket.onclose = function () {
-            wslog('socket closed')
+            console.info('[ws] socket closed')
+            updateCounters({ disconnected: true })
         }
     </script>
 </body>
