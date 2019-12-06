@@ -22,22 +22,31 @@
         color: hsl(0, 0%, 92%);
         margin-top: -20vh;
     }
-    #star-counter {
+    #stars-counter {
         font-family: Merriweather, serif;
         font-size: 15vw;
         font-weight: 900;
         text-shadow: 4px 6px 5px hsl(0, 0%, 20%);
         margin-bottom: 0;
     }
-    #star-counter + p {
+    #stars-counter + p {
         font-size: 5vw;
         margin-top: -10px;
+    }
+    .connected {
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        margin: 0;
+        color: #0f0;
+        font-family: monospace;
     }
     </style>
 </head>
 <body>
-    <h1 id="star-counter">-</h1>
+    <h1 id="stars-counter">-</h1>
     <p>stars</p>
+    <p class="connected"><span id="clients-counter">0</span> connected.</p>
     <script>
         function wslog(...params) {
             console.log('[wss]', ...params)
@@ -45,12 +54,13 @@
 
         function updateCounters({ stars, clients }) {
             if (stars) {
-                let starCounter = document.getElementById('star-counter')
-                starCounter.textContent = "" + stars
+                let starsCounter = document.getElementById('stars-counter')
+                starsCounter.textContent = "" + stars
             }
 
             if (clients) {
-                console.log(`Currently connected: ${clients}`)
+                let clientsCounter = document.getElementById('clients-counter');
+                clientsCounter.textContent = "" + clients
             }
         }
 
