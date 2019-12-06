@@ -21,7 +21,7 @@ fetch('https://api.github.com/repos/ohmyzsh/ohmyzsh')
 
 // debounce logic from https://davidwalsh.name/javascript-debounce-function
 function debounce(func, wait, immediate) {
-    var timeout;
+    var timeout
     return function() {
         var context = this, args = arguments
         var later = function() {
@@ -36,11 +36,9 @@ function debounce(func, wait, immediate) {
 }
 
 const broadcastState = debounce(function() {
+    let json = JSON.stringify(State, null, 0)
     wss.clients.forEach(function each(client) {
-        let json = JSON.stringify(State, null, 0)
-        wss.clients.forEach(function each(client) {
-            client.send(json)
-        })
+        client.send(json)
     })
 }, 500)
 
