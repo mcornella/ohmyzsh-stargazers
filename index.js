@@ -17,6 +17,34 @@ fetch('https://api.github.com/repos/ohmyzsh/ohmyzsh')
     .then(json => { State.stars = json.stargazers_count || 0; })
 
 
+// STATE COMMUNICATION LOGIC
+
+// debounce logic from https://davidwalsh.name/javascript-debounce-function
+function debounce(func, wait, immediate) {
+    var timeout;
+    return function() {
+        var context = this, args = arguments
+        var later = function() {
+            timeout = null
+            if (!immediate) func.apply(context, args)
+        }
+        var callNow = immediate && !timeout
+        clearTimeout(timeout)
+        timeout = setTimeout(later, wait)
+        if (callNow) func.apply(context, args)
+    }
+}
+
+const broadcastState = debounce(function() {
+    wss.clients.forEach(function each(client) {
+        let json = JSON.stringify(State, null, 0)
+        wss.clients.forEach(function each(client) {
+            client.send(json)
+        })
+    })
+}, 500)
+
+
 // SET UP EXPRESS SERVER
 
 const express = require('express')
@@ -37,14 +65,11 @@ app.post('/events', verify, function (req, res) {
         let action = req.body.action === "deleted" ? "removed" : "added"
         console.log(`Star ${action} by @${user}: ${stars}`)
 
-        // Update global object
-        State.stars = stars;
+        // Update global state
+        State.stars = stars
 
-        // Broadcast stars change
-        let json = JSON.stringify(State, null, 0)
-        wss.clients.forEach(function each(client) {
-            client.send(json)
-        })
+        // Broadcast
+        broadcastState()
     }
     res.status(200).send()
 })
@@ -63,9 +88,13 @@ const WebSocket = require('ws')
 const wss = new WebSocket.Server({ server, path: '/ws' })
 
 wss.on('connection', (ws) => {
-    console.log('[wss]', `New client. Connected: ${wss.clients.size}`)
+    console.log('[wss]', `New connection. Total: ${wss.clients.size}`)
+
+    // Update global state
     State.clients = wss.clients.size
-    ws.send(JSON.stringify(State, null, 0))
+
+    // Broadcast
+    broadcastState()
 })
 
 server.listen(PORT, function () {
