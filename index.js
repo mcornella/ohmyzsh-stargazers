@@ -1,12 +1,6 @@
 // Load .env settings
 require('dotenv').config()
 
-const path = require('path')
-const express = require('express')
-const app = express();
-
-const verify = require('./verify')
-
 const PORT = process.env.PORT || 3000
 const WEBHOOK_URL = process.env.WEBHOOK_URL
 if (!WEBHOOK_URL) throw new Error('missing webhook URL')
@@ -26,6 +20,11 @@ fetch('https://api.github.com/repos/ohmyzsh/ohmyzsh')
 
 
 // SET UP EXPRESS SERVER
+
+const express = require('express')
+const app = express();
+
+const verify = require('./verify')
 
 // static assets
 app.use(express.static('static'))
