@@ -76,11 +76,18 @@ app.post('/events', verify, function (req, res) {
 // SET UP WEBSOCKET ENDPOINT
 
 const fs = require('fs')
+
+const credentials = {
+    key: fs.readFileSync(process.env.KEY_PATH || 'server.key'),
+    cert: fs.readFileSync(process.env.CERT_PATH || 'server.crt')
+}
+
+if (process.env.CA_PATH) {
+    credentials["ca"] = fs.readFileSync(process.env.CA_PATH)
+}
+
 const https = require('https')
-const server = https.createServer({
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.crt')
-}, app)
+const server = https.createServer(credentials, app)
 
 const WebSocket = require('ws')
 const wss = new WebSocket.Server({ server, path: '/ws' })
