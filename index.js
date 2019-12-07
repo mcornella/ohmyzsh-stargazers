@@ -109,10 +109,11 @@ server.listen(PORT, function () {
 
 // SET UP SMEE.IO CONNECTION
 
-const SmeeClient = require('smee-client')
-
+// Assume prod environment if not found
 const WEBHOOK_URL = process.env.WEBHOOK_URL
-if (!WEBHOOK_URL) throw new Error('missing webhook URL')
+if (!WEBHOOK_URL) return
+
+const SmeeClient = require('smee-client')
 
 const smee = new SmeeClient({
     source: WEBHOOK_URL,
