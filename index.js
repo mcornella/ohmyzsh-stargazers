@@ -77,6 +77,19 @@ app.post('/events', verify, function (req, res) {
 
 const fs = require('fs')
 
+// Use provided certificate credentials (for production), or
+// use ones generated for local development.
+// If these provided ones aren't trusted, you should use
+// NODE_TLS_REJECT_UNAUTHORIZED=0 in your `.env` file so that
+// the smee.io client doesn't complain about untrusted certs.
+//
+// `server.key` and `server.crt` generated with the command:
+/* openssl req -x509 -out server.crt -keyout server.key \
+-newkey rsa:2048 -nodes -sha256 \
+-subj '/CN=localhost' -extensions EXT -config \
+<(printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n"\
+"[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth") */
+
 const credentials = {
     key: fs.readFileSync(process.env.KEY_PATH || 'server.key'),
     cert: fs.readFileSync(process.env.CERT_PATH || 'server.crt')
