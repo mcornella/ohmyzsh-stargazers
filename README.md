@@ -18,6 +18,15 @@ Here's what it looked like when we reached 100k stars:
   - [confetti.js, by MathuSum Mut](https://github.com/mathusummut/confetti.js/).
 
 
+# GitHub Pages
+
+Since the webhook/websockets server has been shut down, a version of the page remains using GitHub Pages,
+which just makes a request to the GitHub v3 API to get the number of stars. You can access it by going to
+[http://mcornella.github.io/ohmyzsh-stargazers](http://mcornella.github.io/ohmyzsh-stargazers).
+
+![Recording of GitHub Pages version](./images/ghpages.gif)
+
+
 # LICENSE
 
 This project is licensed under the [MIT License](./LICENSE.txt)

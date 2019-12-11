@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="theme-color" content="#101010" />
+    <title>Oh My Zsh stargazers</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Merriweather:900|Open+Sans&display=swap" >
+    <link rel="stylesheet" href="https://unpkg.com/odometer@0.4.8/themes/odometer-theme-default.css" />
+    <style>
+    html {
+        height: 100%;
+        width: 100%;
+        background-color: rgb(16, 16, 16);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    body {
+        text-align: center;
+        font-family: 'Open Sans', sans-serif;
+        color: hsl(0, 0%, 92%);
+    }
+    header {
+        text-align: left;
+        position: absolute;
+        left: calc(2vw + 15px);
+        top: 2vw;
+        padding: 0;
+        margin: 0;
+    }
+    header img {
+        height: 128px;
+        width: auto;
+        min-height: 72px;
+        max-height: 18vh;
+    }
+    main {
+        margin-top: -10vh;
+    }
+    #stars-counter {
+        font-family: Merriweather, serif;
+        font-size: 15vw;
+        font-weight: 900;
+        text-shadow: 4px 6px 5px hsl(0, 0%, 20%);
+        margin-bottom: 0;
+    }
+    #stars-counter + p {
+        font-size: 5vw;
+        margin-top: -1vw;
+    }
+    #confetti-canvas {
+        left: 0;
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="https://github.com/ohmyzsh/ohmyzsh">
+            <img src="/favicon.png" alt="Oh My Zsh logo" height="128" width="128" />
+        </a>
+    </header>
+    <main>
+        <h1 id="stars-counter" data-count="0">0</h1>
+        <p>stars</p>
+    </main>
+
+    <script src="https://unpkg.com/odometer@0.4.8/odometer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mathusummut/confetti.js/confetti.min.js"></script>
+    <script>
+        var od = new Odometer({
+            el: document.getElementById('stars-counter'),
+            value: 0,
+            format: '(,ddd)',
+            theme: 'default',
+            animation: 'count'
+        })
+
+        // Update star counter
+        function updateCounter(stars) {
+            let starsCounter = document.getElementById('stars-counter')
+
+            if (stars > 0) {
+                let beforeStars = parseInt(starsCounter.dataset.count, 10)
+                starsCounter.dataset.count = stars
+                starsCounter.textContent = "" + stars
+
+                if (beforeStars < 1e5 && stars >= 1e5) {
+                    confetti && confetti.start(5000, 80, 120)
+                }
+            }
+        }
+
+        // GitHub API logic
+        window.onload = function() {
+            fetch('https://api.github.com/repos/ohmyzsh/ohmyzsh')
+                .then(res => res.json())
+                .then(json => { updateCounter(json.stargazers_count || 0) })
+        }
+    </script>
+</body>
+</html>
