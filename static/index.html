@@ -84,8 +84,8 @@
     <p id="connected-counter">0 connected</p>
 
     <script src="https://unpkg.com/odometer@0.4.8/odometer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/mathusummut/confetti.js/confetti.min.js"></script>
-    <script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
+    <script defer>
         var od = new Odometer({
             el: document.getElementById('stars-counter'),
             value: 0,
@@ -110,6 +110,44 @@
             }
         }
 
+        // Uses https://github.com/catdad/canvas-confetti
+        function launchConfetti() {
+            if (!confetti) return
+
+            const random = (min, max) => Math.random() * (max - min) + min
+            const randomInt = (...args) => Math.floor(random(...args))
+
+            // scale confetti proportionally to the viewport width
+            let scalar = random(1.1, 1.25) * window.visualViewport.width / 1200
+            scalar = Math.max(0.9, Math.min(scalar, 1.2))
+
+            // make startVelocity proportional to viewport width so it goes a bit further than the center
+            let startVelocity = 50 * window.visualViewport.width / 1200
+            startVelocity = Math.max(20, Math.min(startVelocity, 75))
+
+            const common = {
+                scalar,
+                startVelocity,
+                spread: 90
+            }
+
+            const topLeft = {
+                ...common,
+                angle: 270 + 45,
+                origin: { x: 0, y: 0 },
+                particleCount: randomInt(80, 120)
+            }
+            const topRight = {
+                ...common,
+                angle: 270 - 45,
+                origin: { x: 1, y: 0 },
+                particleCount: randomInt(80, 120)
+            }
+
+            confetti(topLeft)
+            confetti(topRight)
+        }
+
         // Update star and connected counters
         const updateCounters = debounce(function ({ stars, clients, disconnected }) {
             let connectedCounter = document.getElementById('connected-counter')
@@ -132,7 +170,7 @@
                 starsCounter.textContent = "" + stars
 
                 if (beforeStars < 1e5 && stars >= 1e5) {
-                    confetti && confetti.start(5000, 80, 120)
+                    launchConfetti()
                 }
             }
         }, 200)
