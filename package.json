@@ -17,7 +17,7 @@
     "ws": "^8.8.1"
   },
   "devDependencies": {
-    "smee-client": "^1.2.3"
+    "smee-client": "^2.0.1"
   },
   "overrides": {
     "smee-client": {
